@@ -4,6 +4,7 @@ open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Divisibility
 open import Relation.Binary
+open import Relation.Binary.PropositionalEquality
 
 _! : ℕ → ℕ
 zero ! = 1
@@ -12,6 +13,9 @@ suc n ! = suc n * (n !)
 n!>0 : ∀ (n : ℕ) → n ! > 0
 n!>0 zero = s≤s z≤n
 n!>0 (suc n) = ≤-trans (n!>0 n) (m≤m+n (n !) (n * (n !)))
+
+n!≢0 : ∀ (n : ℕ) → n ! ≢ 0
+n!≢0 n = m<n⇒n≢0 (n!>0 n)
 
 m≤‴n⇒m!∣n! : _! Preserves _≤‴_ ⟶ _∣_
 m≤‴n⇒m!∣n! ≤‴-refl = ∣-refl
