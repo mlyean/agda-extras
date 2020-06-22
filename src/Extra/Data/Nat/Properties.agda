@@ -22,5 +22,8 @@ open import Relation.Binary
 m^k≤n^k⇒m≤n : (k : ℕ) → (k > 0) → ∀ {m n : ℕ} → m ^ k ≤ n ^ k → m ≤ n
 m^k≤n^k⇒m≤n k k>0 {m} {n} m^k≤n^k = ≮⇒≥ λ n<m → ≤⇒≯ m^k≤n^k (^-monoˡ-< k k>0 n<m)
 
+m>0∧n>0⇒m*n>0 : ∀ {m n : ℕ} → m > 0 → n > 0 → m * n > 0
+m>0∧n>0⇒m*n>0 {suc m} {suc n} _ _ = 0<1+n
+
 m≢0∧n≢0⇒m*n≢0 : ∀ {m n : ℕ} → m ≢ 0 → n ≢ 0 → m * n ≢ 0
 m≢0∧n≢0⇒m*n≢0 {m} m≢0 n≢0 m*n≡0 = [ m≢0 , n≢0 ] (m*n≡0⇒m≡0∨n≡0 m m*n≡0)

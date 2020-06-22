@@ -2,8 +2,13 @@ module Extra.Data.Nat.Binomial where
 
 open import Data.Nat
 open import Data.Nat.Properties
-open import Relation.Binary.PropositionalEquality as Eq
+open import Data.Nat.DivMod
+open import Data.Sum
+open import Relation.Binary.PropositionalEquality
+open import Relation.Nullary.Decidable
+open import Relation.Nullary.Negation
 
+open import Extra.Data.Nat.Properties
 open import Extra.Data.Nat.Factorial
 
 _C_ : ℕ → ℕ → ℕ
@@ -51,7 +56,7 @@ sCs (suc n) (suc k) = begin
   (2 + n) * ((1 + n) C (1 + k))
     ∎
   where
-    open Eq.≡-Reasoning
+    open ≡-Reasoning
 
 C-! : ∀ (m n : ℕ) → (m + n) C m * m ! * n ! ≡ (m + n) !
 C-! zero n = +-identityʳ (n !)
@@ -64,28 +69,45 @@ C-! (suc m) n = begin
     ≡⟨ cong (λ x → x * m ! * n !) (sCs (m + n) m) ⟩
   (1 + m + n) * ((m + n) C m) * m ! * n !
     ≡⟨ cong (_* n !) (*-assoc (1 + m + n) ((m + n) C m) (m !)) ⟩
-  (1 + m + n) * (((m + n) C m) * m !) * n !
-    ≡⟨ *-assoc (1 + m + n) (((m + n) C m) * m !) (n !) ⟩
+  (1 + m + n) * ((m + n) C m * m !) * n !
+    ≡⟨ *-assoc (1 + m + n) ((m + n) C m * m !) (n !) ⟩
   (1 + m + n) * (((m + n) C m) * m ! * n !)
     ≡⟨ cong ((1 + m + n) *_) (C-! m n) ⟩
   (1 + m + n) !
     ∎
   where
-    open Eq.≡-Reasoning
+    open ≡-Reasoning
+
+private
+  m!*n!≢0 : ∀ (m n : ℕ) → (m !) * (n !) ≢ 0
+  m!*n!≢0 m n = m≢0∧n≢0⇒m*n≢0 (n!≢0 m) (n!≢0 n)
+
+  m!*n!≢0′ : ∀ (m n : ℕ) → False ((m !) * (n !) ≟ 0)
+  m!*n!≢0′ m n = fromWitnessFalse (m!*n!≢0 m n)
+
+  m*n%n≡0′ : ∀ (m n : ℕ) → (≢0 : n ≢ 0) → ((m * n) % n) {fromWitnessFalse ≢0} ≡ 0
+  m*n%n≡0′ m zero n≢0 = contradiction refl n≢0
+  m*n%n≡0′ m (suc n) n≢0 = m*n%n≡0 m n
+
+C-!-div : ∀ (m n : ℕ) → (m + n) C m ≡ ((m + n) !) / (m ! * n !)
+C-!-div m n rewrite sym (C-! m n) | *-assoc ((m + n) C m) (m !) (n !) = sym (m*n/n≡m ((m + n) C m) ((m !) * (n !)) {m!*n!≢0′ m n})
+
+C-!-mod : ∀ (m n : ℕ) → ((m + n) !) % (m ! * n !) ≡ 0
+C-!-mod m n rewrite sym (C-! m n) | *-assoc ((m + n) C m) (m !) (n !) = m*n%n≡0′ ((m + n) C m) ((m !) * (n !)) (m!*n!≢0 m n)
 
 +-C-sym : ∀ (m n : ℕ) → (m + n) C n ≡ (m + n) C m
 +-C-sym m zero rewrite +-identityʳ m = sym (nCn≡1 m)
 +-C-sym zero n = nCn≡1 n
 +-C-sym (suc m) (suc n) = begin
-  ((m + suc n) C n) + ((m + suc n) C suc n)
-    ≡⟨ cong (λ x → (x C n) + (((m + suc n) C suc n))) (+-suc m n) ⟩
-  ((suc m + n) C n) + ((m + suc n) C suc n)
+  (m + (1 + n)) C n + (m + (1 + n)) C (1 + n)
+    ≡⟨ cong (λ x → x C n + ((m + (1 + n)) C (1 + n))) (+-suc m n) ⟩
+  (1 + m + n) C n + (m + (1 + n)) C (1 + n)
     ≡⟨ cong₂ _+_ (+-C-sym (suc m) n) (+-C-sym m (suc n)) ⟩
-  ((suc m + n) C suc m) + ((m + suc n) C m)
-    ≡˘⟨ cong (λ x → (x C suc m) + ((m + suc n) C m)) (+-suc m n) ⟩
-  ((m + suc n) C suc m) + ((m + suc n) C m)
-    ≡⟨ +-comm ((m + suc n) C suc m) ((m + suc n) C m) ⟩
-  ((m + suc n) C m) + ((m + suc n) C suc m)
+  (1 + m + n) C (1 + m) + (m + (1 + n)) C m
+    ≡˘⟨ cong (λ x → x C (1 + m) + (m + (1 + n)) C m) (+-suc m n) ⟩
+  (m + (1 + n)) C (1 + m) + (m + (1 + n)) C m
+    ≡⟨ +-comm ((m + (1 + n)) C (1 + m)) ((m + (1 + n)) C m) ⟩
+  (m + (1 + n)) C m + (m + (1 + n)) C (1 + m)
     ∎
   where
-    open Eq.≡-Reasoning
+    open ≡-Reasoning
