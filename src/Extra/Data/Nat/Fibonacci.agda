@@ -42,11 +42,11 @@ fib′-rec a ha (suc (suc n)) = begin
 fib-rec : ∀ (m n : ℕ) → fib (suc (m + n)) ≡ fib m * fib n + fib (suc m) * fib (suc n)
 fib-rec m n = fib′-rec (fib ∘ (_+ n)) (λ _ → refl) m
 
-fib′-gcd : (a : ℕ → ℕ)
+fib′-gcd-suc : (a : ℕ → ℕ)
         → (fib′ a)
         → ∀ n → gcd (a n) (a (suc n)) ≡ gcd (a 0) (a 1)
-fib′-gcd a ha zero = refl
-fib′-gcd a ha (suc n) = begin
+fib′-gcd-suc a ha zero = refl
+fib′-gcd-suc a ha (suc n) = begin
   gcd (a (1 + n)) (a (2 + n))
     ≡⟨ cong (λ x → gcd (a (1 + n)) x) (ha n) ⟩
   gcd (a (1 + n)) (a n + a (1 + n))
@@ -54,8 +54,11 @@ fib′-gcd a ha (suc n) = begin
   gcd (a (1 + n)) (a n)
     ≡⟨ gcd-comm (a (1 + n)) (a n) ⟩
   gcd (a n) (a (1 + n))
-    ≡⟨ fib′-gcd a ha n ⟩
+    ≡⟨ fib′-gcd-suc a ha n ⟩
   gcd (a 0) (a 1)
     ∎
   where
     open ≡-Reasoning
+
+fib-gcd-suc : ∀ n → gcd (fib n) (fib (suc n)) ≡ 1
+fib-gcd-suc = fib′-gcd-suc fib (λ _ → refl)
