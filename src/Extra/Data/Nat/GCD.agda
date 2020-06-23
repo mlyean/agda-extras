@@ -36,10 +36,19 @@ gcd≡gcd : ∀ {m n h k}
           → gcd m n ≡ gcd h k
 gcd≡gcd d₁ d₂ = ∣-antisym (gcd∣gcd d₁) (gcd∣gcd d₂)
 
-gcd-+ʳ : ∀ m n → gcd m n ≡ gcd m (m + n)
-gcd-+ʳ m n = gcd≡gcd {m} {n} {m} {m + n}
-              (λ (d∣m , d∣n) → d∣m , ∣m∣n⇒∣m+n d∣m d∣n)
+gcdʳ-+ˡ : ∀ m n → gcd m (m + n) ≡ gcd m n
+gcdʳ-+ˡ m n = gcd≡gcd {m} {m + n} {m} {n}
               (λ (d∣m , d∣m+n) → d∣m , ∣m+n∣m⇒∣n d∣m+n d∣m)
+              (λ (d∣m , d∣n) → d∣m , ∣m∣n⇒∣m+n d∣m d∣n)
+
+gcdʳ-+ʳ : ∀ m n → gcd m (n + m) ≡ gcd m n
+gcdʳ-+ʳ m n rewrite +-comm n m = gcdʳ-+ˡ m n
+
+gcdˡ-+ˡ : ∀ m n → gcd (n + m) n ≡ gcd m n
+gcdˡ-+ˡ m n rewrite gcd-comm (n + m) n | gcd-comm m n = gcdʳ-+ˡ n m
+
+gcdˡ-+ʳ : ∀ m n → gcd (m + n) n ≡ gcd m n
+gcdˡ-+ʳ m n rewrite +-comm m n = gcdˡ-+ˡ m n
 
 gcd-mono-∣ : gcd Preserves₂ _∣_ ⟶ _∣_ ⟶ _∣_
 gcd-mono-∣ {m} {h} {n} {k} m∣h n∣k = gcd-greatest {h} {k} (∣-trans (gcd[m,n]∣m m n) m∣h) (∣-trans (gcd[m,n]∣n m n) n∣k)
