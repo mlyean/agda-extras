@@ -15,8 +15,7 @@ open import Relation.Nullary
 open import Relation.Nullary.Decidable
 open import Algebra.Definitions {A = ℕ} _≡_
 
-*-mono-∣ : _*_ Preserves₂ _∣_ ⟶ _∣_ ⟶ _∣_
-*-mono-∣ {m} {h} {n} {k} m∣h n∣k = ∣-trans (*-monoˡ-∣ n m∣h) (*-monoʳ-∣ h n∣k)
+open import Extra.Data.Nat.Divisibility
 
 gcd[n,0]≡n : ∀ n → gcd n 0 ≡ n
 gcd[n,0]≡n n = sym (gcd-universality {n} {0} {n} proj₁ (λ {d} d∣n → d∣n , d ∣0))
@@ -49,6 +48,14 @@ gcdˡ-+ˡ m n rewrite gcd-comm (n + m) n | gcd-comm m n = gcdʳ-+ˡ n m
 
 gcdˡ-+ʳ : ∀ m n → gcd (m + n) n ≡ gcd m n
 gcdˡ-+ʳ m n rewrite +-comm m n = gcdˡ-+ˡ m n
+
+gcd-recˡ : ∀ m n {≢0} → gcd m n ≡ gcd ((m % n) {≢0}) n
+gcd-recˡ m n@(suc n′) = gcd≡gcd {m} {n} {m % n} {n}
+                        (λ (d∣m , d∣n) → %-presˡ-∣ d∣m d∣n , d∣n)
+                        (λ (d∣m%n , d∣n) → ∣n∣m%n⇒∣m d∣n d∣m%n , d∣n)
+
+gcd-recʳ : ∀ m n {≢0} → gcd m n ≡ gcd m ((n % m) {≢0})
+gcd-recʳ m n {≢0} rewrite gcd-comm m n | gcd-comm m ((n % m) {≢0}) = gcd-recˡ n m
 
 gcd-mono-∣ : gcd Preserves₂ _∣_ ⟶ _∣_ ⟶ _∣_
 gcd-mono-∣ {m} {h} {n} {k} m∣h n∣k = gcd-greatest {h} {k} (∣-trans (gcd[m,n]∣m m n) m∣h) (∣-trans (gcd[m,n]∣n m n) n∣k)
