@@ -5,6 +5,7 @@ open import Data.Nat.Properties
 open import Data.Nat.Primality
 open import Data.Nat.Divisibility
 open import Data.Nat.Induction
+open import Data.Nat.InfinitelyOften
 import Data.Fin as Fin
 import Data.Fin.Properties as Fin
 open import Data.Sum
@@ -14,6 +15,9 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Relation.Nullary.Decidable
 open import Relation.Nullary.Negation
+
+open import Extra.Data.Nat.Divisibility
+open import Extra.Data.Nat.Factorial
 
 -- Equivalent definitions of a prime
 
@@ -62,6 +66,17 @@ prime∨comp {n} n>1 with prime? n
 ... | yes prime = inj₁ prime
 ... | no prime = inj₂ (n>1 , prime)
 
+-- Properties of prime numbers
+
+p>1 : ∀ {p} → Prime p → p > 1
+p>1 {suc (suc p)} _ = s≤s (s≤s z≤n)
+
+p>0 : ∀ {p} → Prime p → p > 0
+p>0 prime = <-trans (s≤s z≤n) (p>1 prime)
+
+p∤1 : ∀ {p} → Prime p → p ∤ 1
+p∤1 {p} prime p∣1 rewrite ∣1⇒≡1 p∣1 = prime
+
 private
   ∃p∣n′ : ∀ {n} → n > 1 → Acc _<_ n → ∃[ p ] (Prime p × p ∣ n)
   ∃p∣n′ {n} n>1 (acc rec) with prime∨comp n>1
@@ -72,3 +87,15 @@ private
 
 ∃p∣n : ∀ {n} → n > 1 → ∃[ p ] (Prime p × p ∣ n)
 ∃p∣n {n} n>1 = ∃p∣n′ n>1 (<-wellFounded n)
+
+inf-primes : Inf Prime
+inf-primes (0 , h) = h 2 z≤n (λ ())
+inf-primes (suc n , h) with ∃p∣n {1 + n !} (s≤s (n!>0 n))
+... | p , p-prime , p∣1+m! = h p (≰⇒> lem₃) p-prime
+  where
+    lem₁ : p ≤ n → p ∣ n !
+    lem₁ p≤n = m≤n⇒m∣n! p n (p>0 p-prime) p≤n
+    lem₂ : p ≤ n → p ∣ 1
+    lem₂ p≤n = ∣m+n∣n⇒∣m p∣1+m! (lem₁ p≤n)
+    lem₃ : p ≰ n
+    lem₃ p≤n = p∤1 p-prime (lem₂ p≤n)
