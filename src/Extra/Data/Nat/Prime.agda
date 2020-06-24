@@ -66,6 +66,9 @@ prime∨comp {n} n>1 with prime? n
 ... | yes prime = inj₁ prime
 ... | no prime = inj₂ (n>1 , prime)
 
+¬prime∧comp : ∀ n → ¬ (Prime n × Composite n)
+¬prime∧comp n (prime , comp) = proj₂ comp prime
+
 -- Properties of prime numbers
 
 p>1 : ∀ {p} → Prime p → p > 1
@@ -90,12 +93,12 @@ private
 
 inf-primes : Inf Prime
 inf-primes (0 , h) = h 2 z≤n (λ ())
-inf-primes (suc n , h) with ∃p∣n {1 + n !} (s≤s (n!>0 n))
-... | p , p-prime , p∣1+m! = h p (≰⇒> lem₃) p-prime
+inf-primes (suc n , h) with ∃p∣n (s≤s (n!>0 n))
+... | p , p-prime , p∣1+n! = h p (≰⇒> lem₃) p-prime
   where
     lem₁ : p ≤ n → p ∣ n !
     lem₁ p≤n = m≤n⇒m∣n! p n (p>0 p-prime) p≤n
     lem₂ : p ≤ n → p ∣ 1
-    lem₂ p≤n = ∣m+n∣n⇒∣m p∣1+m! (lem₁ p≤n)
+    lem₂ p≤n = ∣m+n∣n⇒∣m p∣1+n! (lem₁ p≤n)
     lem₃ : p ≰ n
     lem₃ p≤n = p∤1 p-prime (lem₂ p≤n)
