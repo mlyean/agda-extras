@@ -27,3 +27,6 @@ m>0∧n>0⇒m*n>0 {suc m} {suc n} _ _ = 0<1+n
 
 m≢0∧n≢0⇒m*n≢0 : ∀ {m n : ℕ} → m ≢ 0 → n ≢ 0 → m * n ≢ 0
 m≢0∧n≢0⇒m*n≢0 {m} m≢0 n≢0 m*n≡0 = [ m≢0 , n≢0 ] (m*n≡0⇒m≡0∨n≡0 m m*n≡0)
+
+n≤m*n : ∀ {m} n → 0 < m → n ≤ m * n
+n≤m*n {m} n 0<m rewrite *-comm m n = m≤m*n n 0<m
