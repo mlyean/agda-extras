@@ -17,7 +17,10 @@ Currently has some additional theories on `Nat` in `src/Extra/Data/Nat`, includi
   - `gcd[n,0]≡n : ∀ n → gcd n 0 ≡ n`
   - `gcd-split : ∀ m n d → Coprime m n → d ∣ m * n → d ≡ gcd d m * gcd d n`
   - `gcd-multʳ : ∀ k → Multiplicative (gcd k)`
-
+- Primes (in `Prime.agda`)
+  - Definition of `Composite`
+  - `composite-div : ∀ {n} → Composite n → ∃[ d ] (1 < d × d < n × d ∣ n)`
+  - `∃p∣n : ∀ {n} → n > 1 → ∃[ p ] (Prime p × p ∣ n)`
 ## TO-DO
 
 - (`Fibonacci.agda`) Prove `fib-gcd : ∀ (m n : ℕ) → gcd (fib m) (fib n) ≡ fib (gcd m n)`
