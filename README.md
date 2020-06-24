@@ -21,6 +21,7 @@ Currently has some additional theories on `Nat` in `src/Extra/Data/Nat`, includi
   - Definition of `Composite`
   - `composite-div : ∀ {n} → Composite n → ∃[ d ] (1 < d × d < n × d ∣ n)`
   - `∃p∣n : ∀ {n} → n > 1 → ∃[ p ] (Prime p × p ∣ n)`
+  - Infinitude of primes: `inf-primes : Inf Prime`
 ## TO-DO
 
 - (`Fibonacci.agda`) Prove `fib-gcd : ∀ (m n : ℕ) → gcd (fib m) (fib n) ≡ fib (gcd m n)`
