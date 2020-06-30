@@ -2,19 +2,19 @@ module Extra.Data.Nat.Prime where
 
 open import Data.Nat
 open import Data.Nat.Properties
-open import Data.Nat.Primality
+open import Data.Nat.Primality using (Prime; prime?)
 open import Data.Nat.Divisibility
-open import Data.Nat.Induction
-open import Data.Nat.InfinitelyOften
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Nat.InfinitelyOften using (Inf)
 import Data.Fin as Fin
 import Data.Fin.Properties as Fin
 open import Data.Sum
 open import Data.Product
-open import Relation.Unary
-open import Relation.Binary.PropositionalEquality
-open import Relation.Nullary
-open import Relation.Nullary.Decidable
-open import Relation.Nullary.Negation
+open import Data.Empty
+open import Relation.Unary using (Pred; Decidable)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
+open import Relation.Nullary using (¬_; yes; no)
+open import Relation.Nullary.Negation using (¬?; contradiction; decidable-stable)
 
 open import Extra.Data.Nat.Divisibility
 open import Extra.Data.Nat.Factorial
@@ -40,35 +40,6 @@ prime-div₂ : ∀ {p}
 prime-div₂ {suc (suc p′)} (s≤s _) hp i hi with hp hi
 ... | inj₂ (2+i≡p) = <-irrefl (suc-injective (suc-injective 2+i≡p)) (Fin.toℕ<n i)
 
--- Definition of composite
-
-Composite : Pred ℕ _
-Composite n = n > 1 × ¬ Prime n
-
-composite? : Decidable Composite
-composite? n with n >? 1 | prime? n
-... | no ¬n>1 | _         = no (λ z → ¬n>1 (proj₁ z))
-... | _       | yes prime = no (λ z → proj₂ z prime)
-... | yes n>1 | no ¬prime = yes (n>1 , ¬prime)
-
--- Properties of composite numbers
-
-composite-div : ∀ {n} → Composite n → ∃[ d ] (1 < d × d < n × d ∣ n)
-composite-div {n@(suc (suc n′))} (s≤s (s≤s _) , n-comp)
-  with Fin.¬∀⟶∃¬ n′ (λ i → suc (suc (Fin.toℕ i)) ∤ n) (λ i → ¬? (_∣?_ (suc (suc (Fin.toℕ i))) n)) n-comp
-... | d′ , ¬¬d∣n = d , s≤s (s≤s z≤n) , s≤s (s≤s (Fin.toℕ<n d′)) , decidable-stable (_∣?_ d n) ¬¬d∣n
-  where
-    d : ℕ
-    d = suc (suc (Fin.toℕ d′))
-
-prime∨comp : ∀ {n} → n > 1 → Prime n ⊎ Composite n
-prime∨comp {n} n>1 with prime? n
-... | yes prime = inj₁ prime
-... | no prime = inj₂ (n>1 , prime)
-
-¬prime∧comp : ∀ n → ¬ (Prime n × Composite n)
-¬prime∧comp n (prime , comp) = proj₂ comp prime
-
 -- Properties of prime numbers
 
 p>1 : ∀ {p} → Prime p → p > 1
@@ -80,16 +51,51 @@ p>0 prime = <-trans (s≤s z≤n) (p>1 prime)
 p∤1 : ∀ {p} → Prime p → p ∤ 1
 p∤1 {p} prime p∣1 rewrite ∣1⇒≡1 p∣1 = prime
 
-private
-  ∃p∣n′ : ∀ {n} → n > 1 → Acc _<_ n → ∃[ p ] (Prime p × p ∣ n)
-  ∃p∣n′ {n} n>1 (acc rec) with prime∨comp n>1
-  ... | inj₁ prime = n , prime , ∣-refl
-  ... | inj₂ comp with composite-div comp
-  ... | d , 1<d , d<n , d∣n with ∃p∣n′ 1<d (rec d d<n)
-  ... | p , p-prime , p∣d = p , p-prime , ∣-trans p∣d d∣n
+Composite : ℕ → Set
+Composite 0 = ⊥
+Composite 1 = ⊥
+Composite (suc (suc n)) = ∃[ d ] (2 + Fin.toℕ {n} d ∣ 2 + n)
+
+module Composite where
+  div : ∀ {n} → Composite n → ℕ
+  div {suc (suc n)} composite = 2 + Fin.toℕ {n} (proj₁ composite)
+
+  div∣n : ∀ {n} → (cn : Composite n) → div cn ∣ n
+  div∣n {suc (suc n)} = proj₂
+
+  div>1 : ∀ {n} → (cn : Composite n) → div cn > 1
+  div>1 {suc (suc n)} cn = s≤s (s≤s z≤n)
+
+  div<n : ∀ {n} → (cn : Composite n) → div cn < n
+  div<n {suc (suc n)} cn = s≤s (s≤s (Fin.toℕ<n (proj₁ cn)))
+
+open Composite
+
+composite? : Decidable Composite
+composite? 0 = no λ()
+composite? 1 = no λ()
+composite? (suc (suc n)) = Fin.any? (λ d → (2 + Fin.toℕ d) ∣? 2 + n)
+
+prime⇒¬composite : ∀ {n} → Prime n → ¬ Composite n
+prime⇒¬composite {suc (suc n)} prime (d , d∣n) = prime d d∣n
+
+¬prime⇒composite : ∀ {n} → n > 1 → ¬ Prime n → Composite n
+¬prime⇒composite {suc (suc n)} (s≤s _) prime with Fin.¬∀⟶∃¬ n _ (λ x → ¬? (_ ∣? _)) prime
+... | d , d∣n = d , decidable-stable (_ ∣? _) d∣n
+
+prime∨comp : ∀ {n} → n > 1 → Prime n ⊎ Composite n
+prime∨comp {n} n>1 with prime? n
+... | yes p = inj₁ p
+... | no ¬p = inj₂ (¬prime⇒composite n>1 ¬p)
 
 ∃p∣n : ∀ {n} → n > 1 → ∃[ p ] (Prime p × p ∣ n)
 ∃p∣n {n} n>1 = ∃p∣n′ n>1 (<-wellFounded n)
+  where
+    ∃p∣n′ : ∀ {n} → n > 1 → Acc _<_ n → ∃[ p ] (Prime p × p ∣ n)
+    ∃p∣n′ {n} n>1 (acc rec) with prime∨comp n>1
+    ... | inj₁ prime = n , prime , ∣-refl
+    ... | inj₂ comp with ∃p∣n′ (div>1 comp) (rec (div comp) (div<n comp))
+    ... | p , p-prime , p∣d = p , p-prime , ∣-trans p∣d (div∣n comp)
 
 inf-primes : Inf Prime
 inf-primes (0 , h) = h 2 z≤n (λ ())
