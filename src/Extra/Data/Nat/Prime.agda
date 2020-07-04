@@ -51,6 +51,8 @@ p>0 prime = <-trans (s≤s z≤n) (p>1 prime)
 p∤1 : ∀ {p} → Prime p → p ∤ 1
 p∤1 {p} prime p∣1 rewrite ∣1⇒≡1 p∣1 = prime
 
+-- Definition of composite
+
 Composite : ℕ → Set
 Composite 0 = ⊥
 Composite 1 = ⊥
