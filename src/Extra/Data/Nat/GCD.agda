@@ -6,6 +6,7 @@ open import Data.Nat.Coprimality using (Coprime; coprime⇒gcd≡1)
 open import Data.Nat.Divisibility
 open import Data.Nat.DivMod
 open import Data.Nat.GCD
+open import Data.Nat.Induction
 open import Data.Product
 open import Data.Sum
 open import Relation.Binary
@@ -154,3 +155,24 @@ gcd-multʳ k {m} {n} coprime = sym (gcd-universality {k} {m * n} {gcd k m * gcd 
 
 gcd-multˡ : ∀ k → Multiplicative (λ x → gcd x k)
 gcd-multˡ k {m} {n} rewrite gcd-comm m k | gcd-comm n k | gcd-comm (m * n) k = gcd-multʳ k
+
+gcd-induction′ : ∀ {P : ℕ → ℕ → Set} (m n : ℕ)
+               → Acc _<_ m
+               → n < m
+               → (∀ m → P m 0)
+               → (∀ m n {≢0} → P n ((m % n) {≢0}) → P m n)
+               → P m n
+gcd-induction′ m zero _ n<m h₀ _ = h₀ m
+gcd-induction′ m n@(suc n-1) (acc rec) n<m h₀ h₁ = h₁ m n (gcd-induction′ n (m % n) (rec n n<m) (m%n<n m n-1) h₀ h₁)
+
+
+gcd-induction : ∀ {P : ℕ → ℕ → Set} (m n : ℕ)
+              → (∀ m → P m 0)
+              → (∀ m n {≢0} → P n ((m % n) {≢0}) → P m n)
+              → P m n
+gcd-induction m zero h₀ h₁ = h₀ m
+gcd-induction zero n@(suc n-1) h₀ h₁ = h₁ 0 n (h₀ n)
+gcd-induction {P} m@(suc m-1) n@(suc n-1) h₀ h₁ with <-cmp m n
+... | tri< m<n _ _ = h₁ m n (gcd-induction′ n (m % n) (<-wellFounded n) (m%n<n m n-1) h₀ h₁)
+... | tri≈ _ refl _ = h₁ m m (subst (P m) (sym (n%n≡0 m-1)) (h₀ m))
+... | tri> _ _ m>n = gcd-induction′ m n (<-wellFounded m) m>n h₀ h₁
