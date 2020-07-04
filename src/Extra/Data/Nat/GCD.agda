@@ -2,7 +2,7 @@ module Extra.Data.Nat.GCD where
 
 open import Data.Nat
 open import Data.Nat.Properties
-open import Data.Nat.Coprimality using (Coprime; coprime⇒gcd≡1)
+open import Data.Nat.Coprimality using (Coprime; coprime⇒gcd≡1; coprime-divisor)
 open import Data.Nat.Divisibility
 open import Data.Nat.DivMod
 open import Data.Nat.GCD
@@ -50,13 +50,25 @@ gcdˡ-+ˡ m n rewrite gcd-comm (n + m) n | gcd-comm m n = gcdʳ-+ˡ n m
 gcdˡ-+ʳ : ∀ m n → gcd (m + n) n ≡ gcd m n
 gcdˡ-+ʳ m n rewrite +-comm m n = gcdˡ-+ˡ m n
 
+gcd-rec : ∀ m n {≢0} → gcd m n ≡ gcd n ((m % n) {≢0})
+gcd-rec m n {≢0} = gcd≡gcd {m} {n} {n} {m % n}
+                           (λ (d∣m , d∣n) → d∣n , %-presˡ-∣ d∣m d∣n)
+                           (λ (d∣n , d∣m%n) → ∣n∣m%n⇒∣m d∣n d∣m%n , d∣n)
+
 gcd-recˡ : ∀ m n {≢0} → gcd m n ≡ gcd ((m % n) {≢0}) n
-gcd-recˡ m n@(suc n′) = gcd≡gcd {m} {n} {m % n} {n}
-                        (λ (d∣m , d∣n) → %-presˡ-∣ d∣m d∣n , d∣n)
-                        (λ (d∣m%n , d∣n) → ∣n∣m%n⇒∣m d∣n d∣m%n , d∣n)
+gcd-recˡ m n@(suc n′) = trans (gcd-rec m n) (gcd-comm n (m % n))
 
 gcd-recʳ : ∀ m n {≢0} → gcd m n ≡ gcd m ((n % m) {≢0})
 gcd-recʳ m n {≢0} rewrite gcd-comm m n | gcd-comm m ((n % m) {≢0}) = gcd-recˡ n m
+
+gcdʳ-∣ : ∀ {m n k} → m ∣ k → gcd m (n + k) ≡ gcd m n
+gcdʳ-∣ {m} {n} {k} m∣k = gcd≡gcd (λ (d∣m , d∣n+k) → d∣m , (∣m+n∣n⇒∣m d∣n+k (∣-trans d∣m m∣k)))
+                                 (λ (d∣m , d∣n) → d∣m , ∣m∣n⇒∣m+n d∣n (∣-trans d∣m m∣k))
+
+gcd-coprime-cancel : ∀ {m n k} → Coprime m n → gcd m (n * k) ≡ gcd m k
+gcd-coprime-cancel {m} {n} {k} coprime = gcd≡gcd
+    (λ (d∣m , d∣n*k) → d∣m , coprime-divisor {j = n} (λ (i∣d , i∣n) → coprime (∣-trans i∣d d∣m , i∣n)) d∣n*k)
+    (λ (d∣m , d∣k) → d∣m , ∣-trans d∣k (n∣m*n n))
 
 gcd-mono-∣ : gcd Preserves₂ _∣_ ⟶ _∣_ ⟶ _∣_
 gcd-mono-∣ {m} {h} {n} {k} m∣h n∣k = gcd-greatest {h} {k} (∣-trans (gcd[m,n]∣m m n) m∣h) (∣-trans (gcd[m,n]∣n m n) n∣k)
