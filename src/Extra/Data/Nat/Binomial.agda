@@ -3,10 +3,9 @@ module Extra.Data.Nat.Binomial where
 open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.DivMod
-open import Data.Sum
 open import Relation.Binary.PropositionalEquality
-open import Relation.Nullary.Decidable
-open import Relation.Nullary.Negation
+open import Relation.Nullary.Decidable using (False; fromWitnessFalse)
+open import Relation.Nullary.Negation using (contradiction)
 
 open import Extra.Data.Nat.Properties
 open import Extra.Data.Nat.Factorial
