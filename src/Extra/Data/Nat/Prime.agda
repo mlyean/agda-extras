@@ -10,7 +10,7 @@ import Data.Fin as Fin
 import Data.Fin.Properties as Fin
 open import Data.Sum
 open import Data.Product
-open import Data.Empty
+open import Data.Empty using (⊥)
 open import Relation.Unary using (Pred; Decidable)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 open import Relation.Nullary using (¬_; yes; no)

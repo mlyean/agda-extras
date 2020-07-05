@@ -6,14 +6,13 @@ open import Data.Nat.Coprimality using (Coprime; coprime⇒gcd≡1; coprime-divi
 open import Data.Nat.Divisibility
 open import Data.Nat.DivMod
 open import Data.Nat.GCD
-open import Data.Nat.Induction
-open import Data.Product
-open import Data.Sum
+open import Data.Nat.Induction using (Acc; acc; <-wellFounded)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.Sum using (inj₂)
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
-open import Relation.Unary
-open import Relation.Nullary
-open import Relation.Nullary.Decidable
+open import Relation.Unary using (Pred)
+open import Relation.Nullary.Decidable using (fromWitnessFalse)
 open import Algebra.Definitions {A = ℕ} _≡_
 
 open import Extra.Data.Nat.Divisibility
@@ -176,7 +175,6 @@ gcd-induction′ : ∀ {P : ℕ → ℕ → Set} (m n : ℕ)
                → P m n
 gcd-induction′ m zero _ n<m h₀ _ = h₀ m
 gcd-induction′ m n@(suc n-1) (acc rec) n<m h₀ h₁ = h₁ m n (gcd-induction′ n (m % n) (rec n n<m) (m%n<n m n-1) h₀ h₁)
-
 
 gcd-induction : ∀ {P : ℕ → ℕ → Set} (m n : ℕ)
               → (∀ m → P m 0)
